@@ -1,6 +1,6 @@
 # ROADMAP: Stellar account fixtures
 
-Last updated: 2026-11-19 19:37 UTC
+Last updated: 2026-11-20 19:24 UTC
 
 A corpus of public Stellar account reads, their provenance, and the validator that keeps
 the provenance honest. Nothing here is a claim about whether an account is well
@@ -36,9 +36,9 @@ empty gap list is gate G2.
 |---|---|---|---|---|
 | 0 | Ground truth | 5 | 6 | 83% |
 | 1 | Repository wrapper | 10 | 10 | 100% |
-| 2 | Coverage | 7 | 10 | 70% |
+| 2 | Coverage | 8 | 11 | 73% |
 | 3 | Consumer contract | 1 | 4 | 25% |
-| **All phases** | **Readiness total** | **23** | **30** | **77%** |
+| **All phases** | **Readiness total** | **24** | **31** | **77%** |
 | Gates | G1 to G5 | 2 | 5 | 40% |
 <!-- PROGRESS:END -->
 
@@ -136,6 +136,7 @@ python3 scripts/roadmap_progress.py --check ROADMAP.md
 - [x] **2.8** Diff `corpus/root-public.json` and `corpus/root-testnet.json` in `corpus/root-diff.md`. S. Deps: 2.6. Done when: `corpus/root-diff.md` provides a field-by-field diff of both root documents, separating network identity fields (`network_passphrase`, URLs) from volatile fields (ledger sequences), cites passphrase constants from `corpus/root-public.json:103` and `corpus/root-testnet.json:107`, and references `SCHEMA.md:133`. **Issue:** #48. (done 2026-11-19: added `corpus/root-diff.md` and linked in README.md; issue #48.)
 - [x] **2.9** Document the root document contract in `SCHEMA.md` Section 6 and enforce with tests. S. Deps: 2.6. Done when: `SCHEMA.md` Section 6 documents root document requirements, network passphrase ground truth, and check_root validator errors, and `tests/test_validate_schema_root_contract.py` ensures documented phrases remain in sync with validate.py. **Issue:** #80. (done 2026-11-19: expanded `SCHEMA.md` Section 6 and added `tests/test_validate_schema_root_contract.py`; issue #80.)
 - [x] **2.10** Align the shape label vocabulary table in `SCHEMA.md` Section 5 with `shapes_of` in `validate.py`. S. Deps: 0.5. Done when: `SCHEMA.md` Section 5 table is audited and aligned with `shapes_of`, and `tests/test_validate_schema_shape_table.py` asserts exact bidirectional parity between `SCHEMA.md` table tokens and all tokens emitted by `shapes_of`. **Issue:** #81. (done 2026-11-19: aligned `SCHEMA.md` Section 5 and added `tests/test_validate_schema_shape_table.py`; issue #81.)
+- [x] **2.11** Prove the `ACCOUNT_CAP` boundary in `tests/test_capture_cap_boundary.py`. S. Deps: 0.4. Done when: a body of exactly 512,000 bytes is accepted by `fetch()`, 512,001 bytes raises `Refused` with the cap message, and a refused capture leaves no fixture directory. **Issue:** #92. (done 2026-11-20 19:24: added `tests/test_capture_cap_boundary.py`, which serves both sizes from a loopback server and checks `capture()` writes nothing when the cap is exceeded.)
 
 ### Phase 3: Consumer contract
 
@@ -158,6 +159,7 @@ python3 scripts/roadmap_progress.py --check ROADMAP.md
 
 | When | What | Tasks |
 |---|---|---|
+| 2026-11-20 19:24 | Task 2.11 (closing #92): added `tests/test_capture_cap_boundary.py`, which serves both sizes from a loopback server and checks `capture()` writes nothing when the cap is exceeded. | 2.11 |
 | 2026-11-19 19:37 | Tasks 2.7 to 2.10 (closing #46, #48, #80, #81): document coordinator data entry in `corpus/data-entries.md`, diff root documents in `corpus/root-diff.md`, document root contract in `SCHEMA.md` Section 6 with contract sync tests in `tests/test_validate_schema_root_contract.py`, and align `SCHEMA.md` Section 5 shape table with `validate.py` with test parity in `tests/test_validate_schema_shape_table.py`. | 2.7, 2.8, 2.9, 2.10 |
 | 2026-11-09 14:50 | Finalize Drips Wave 11 submission packet (docs/WAVE_SUBMISSION.md) for Stellar Wave 11 (Nov 18–25, 2026), documenting 115 tests passing, 9 captures, live documentation site at https://posture-sec.github.io/stellar-account-fixtures/, OpenSSF Scorecard 5.2, and 4 scoped Wave backlog issues (#13, #14, #15, #17). | none ticked |
 | 2026-11-02 12:42 | Six mainnet accounts, `validate.py`, `tools/capture.py` and `test_validate.py` land in the first commit on `main`, captured from `horizon.stellar.org` on Horizon 30.0.0 at ledgers 65266813 to 65266866 and written as sorted-key JSON with one sidecar each. `validate.py` checks every sidecar against the bytes beside it and against the shape vocabulary. Eight defects were found by writing the tests and fixed in the same work, all of them in the code rather than in a fixture: `REQUIRED` demanded the five provenance keys from a `synthetic` fixture that `check_common` forbids them, so no synthetic fixture could ever validate; `load_manifest` read the sidecar with `read_text`, whose universal newlines turned CRLF into LF before the CRLF check could see it, so that check was dead code; `check_root` indexed `NETWORKS[network]` with an unvalidated key, so a sidecar naming a made-up network plus a file of that name raised instead of reporting; `shapes_of` did unguarded arithmetic and iteration over body fields, so a threshold written as a string crashed the validator rather than failing it; `tools/capture.py` accepted a `G`-shaped address whose CRC16 does not verify, so a typo cost a Horizon round trip instead of a refusal; its local refusals ran after the request rather than before it; the root document was parsed with no guard, so an HTML error page raised instead of refusing; and `urllib` follows a 3xx by default, which is the one that matters most here, because a redirect would have written bytes served from somewhere else under the URL the sidecar records as its source and the passphrase check on the root document would never have seen it. `fetch` now uses an opener that refuses a redirect, and the loopback suite covers that and the size cap. `issuer-auth-required`'s scenario said 152 sponsorships where the bytes say `num_sponsoring` is 150; corrected, and that drift is why 0.6 is open. `SCHEMA.md` is version 1, `README.md` states the eight uncovered labels rather than implying coverage, and its report block is the command's output with a staleness note rather than a hand-written list. Not verified: any GitHub state at all, since this document was written before the repository existed. Verified locally: `validate.py` exits 0, 95 tests pass on Python 3.12.3 and again on 3.11.16, `ruff check` and `ruff format --check` are clean, `mypy` is clean on three files, and the `shape` line `capture.py` now generates is byte-identical to the six already on disk. | 0.1 to 0.5, 0.6 left open |

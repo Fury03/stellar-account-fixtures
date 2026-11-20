@@ -77,7 +77,7 @@ seed-shaped string (`S...`) is refused by both the capture tool and the validato
 | Indicator | Value | Source |
 |---|---|---|
 | Verified Captures | **9 accounts** (8 Mainnet, 1 Test) | `fixtures/` |
-| Test Suite | **126 passing** | `python -m unittest` |
+| Test Suite | **130 passing** | `python -m unittest` |
 | Integrity Assurance | **SHA-256 sidecars verified** | `validate.py` |
 | Safety Invariant | **Zero secret keys (`S...`)** | Validator enforced |
 <!-- METRICS:END -->
