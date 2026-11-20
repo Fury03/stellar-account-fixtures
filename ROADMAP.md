@@ -36,9 +36,9 @@ empty gap list is gate G2.
 |---|---|---|---|---|
 | 0 | Ground truth | 5 | 6 | 83% |
 | 1 | Repository wrapper | 10 | 10 | 100% |
-| 2 | Coverage | 8 | 11 | 73% |
+| 2 | Coverage | 9 | 12 | 75% |
 | 3 | Consumer contract | 1 | 4 | 25% |
-| **All phases** | **Readiness total** | **24** | **31** | **77%** |
+| **All phases** | **Readiness total** | **25** | **32** | **78%** |
 | Gates | G1 to G5 | 2 | 5 | 40% |
 <!-- PROGRESS:END -->
 
@@ -137,6 +137,7 @@ python3 scripts/roadmap_progress.py --check ROADMAP.md
 - [x] **2.9** Document the root document contract in `SCHEMA.md` Section 6 and enforce with tests. S. Deps: 2.6. Done when: `SCHEMA.md` Section 6 documents root document requirements, network passphrase ground truth, and check_root validator errors, and `tests/test_validate_schema_root_contract.py` ensures documented phrases remain in sync with validate.py. **Issue:** #80. (done 2026-11-19: expanded `SCHEMA.md` Section 6 and added `tests/test_validate_schema_root_contract.py`; issue #80.)
 - [x] **2.10** Align the shape label vocabulary table in `SCHEMA.md` Section 5 with `shapes_of` in `validate.py`. S. Deps: 0.5. Done when: `SCHEMA.md` Section 5 table is audited and aligned with `shapes_of`, and `tests/test_validate_schema_shape_table.py` asserts exact bidirectional parity between `SCHEMA.md` table tokens and all tokens emitted by `shapes_of`. **Issue:** #81. (done 2026-11-19: aligned `SCHEMA.md` Section 5 and added `tests/test_validate_schema_shape_table.py`; issue #81.)
 - [x] **2.11** Prove the `ACCOUNT_CAP` boundary in `tests/test_capture_cap_boundary.py`. S. Deps: 0.4. Done when: a body of exactly 512,000 bytes is accepted by `fetch()`, 512,001 bytes raises `Refused` with the cap message, and a refused capture leaves no fixture directory. **Issue:** #92. (done 2026-11-20 19:24: added `tests/test_capture_cap_boundary.py`, which serves both sizes from a loopback server and checks `capture()` writes nothing when the cap is exceeded.)
+- [x] **2.12** Prove a seed-shaped response leaves no fixture directory in `tests/test_capture_seed_no_dir.py`. S. Deps: 0.4. Done when: a response containing an `S...` seed pattern raises `Refused` with the seed refusal text, exits 2 through `main`, and creates no fixture or corpus directory on disk. **Issue:** #93. (done 2026-11-20 19:24: added `tests/test_capture_seed_no_dir.py`, which feeds `capture()` a seed-shaped body built at run time and asserts the refusal and an untouched root directory.)
 
 ### Phase 3: Consumer contract
 
@@ -159,6 +160,7 @@ python3 scripts/roadmap_progress.py --check ROADMAP.md
 
 | When | What | Tasks |
 |---|---|---|
+| 2026-11-20 19:24 | Task 2.12 (closing #93): added `tests/test_capture_seed_no_dir.py`, which feeds `capture()` a seed-shaped body built at run time and asserts the refusal and an untouched root directory. | 2.12 |
 | 2026-11-20 19:24 | Task 2.11 (closing #92): added `tests/test_capture_cap_boundary.py`, which serves both sizes from a loopback server and checks `capture()` writes nothing when the cap is exceeded. | 2.11 |
 | 2026-11-19 19:37 | Tasks 2.7 to 2.10 (closing #46, #48, #80, #81): document coordinator data entry in `corpus/data-entries.md`, diff root documents in `corpus/root-diff.md`, document root contract in `SCHEMA.md` Section 6 with contract sync tests in `tests/test_validate_schema_root_contract.py`, and align `SCHEMA.md` Section 5 shape table with `validate.py` with test parity in `tests/test_validate_schema_shape_table.py`. | 2.7, 2.8, 2.9, 2.10 |
 | 2026-11-09 14:50 | Finalize Drips Wave 11 submission packet (docs/WAVE_SUBMISSION.md) for Stellar Wave 11 (Nov 18–25, 2026), documenting 115 tests passing, 9 captures, live documentation site at https://posture-sec.github.io/stellar-account-fixtures/, OpenSSF Scorecard 5.2, and 4 scoped Wave backlog issues (#13, #14, #15, #17). | none ticked |
