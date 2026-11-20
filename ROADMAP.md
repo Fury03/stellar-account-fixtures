@@ -36,9 +36,9 @@ empty gap list is gate G2.
 |---|---|---|---|---|
 | 0 | Ground truth | 5 | 6 | 83% |
 | 1 | Repository wrapper | 10 | 10 | 100% |
-| 2 | Coverage | 10 | 13 | 77% |
+| 2 | Coverage | 11 | 14 | 79% |
 | 3 | Consumer contract | 1 | 4 | 25% |
-| **All phases** | **Readiness total** | **26** | **33** | **79%** |
+| **All phases** | **Readiness total** | **27** | **34** | **79%** |
 | Gates | G1 to G5 | 2 | 5 | 40% |
 <!-- PROGRESS:END -->
 
@@ -139,6 +139,7 @@ python3 scripts/roadmap_progress.py --check ROADMAP.md
 - [x] **2.11** Prove the `ACCOUNT_CAP` boundary in `tests/test_capture_cap_boundary.py`. S. Deps: 0.4. Done when: a body of exactly 512,000 bytes is accepted by `fetch()`, 512,001 bytes raises `Refused` with the cap message, and a refused capture leaves no fixture directory. **Issue:** #92. (done 2026-11-20 19:24: added `tests/test_capture_cap_boundary.py`, which serves both sizes from a loopback server and checks `capture()` writes nothing when the cap is exceeded.)
 - [x] **2.12** Prove a seed-shaped response leaves no fixture directory in `tests/test_capture_seed_no_dir.py`. S. Deps: 0.4. Done when: a response containing an `S...` seed pattern raises `Refused` with the seed refusal text, exits 2 through `main`, and creates no fixture or corpus directory on disk. **Issue:** #93. (done 2026-11-20 19:24: added `tests/test_capture_seed_no_dir.py`, which feeds `capture()` a seed-shaped body built at run time and asserts the refusal and an untouched root directory.)
 - [x] **2.13** Assert `tools/capture.py` imports only the standard library in `tests/test_capture_stdlib_imports.py`. S. Deps: 0.4. Done when: `ast` analysis of every import in `tools/capture.py` resolves each top-level name against `sys.stdlib_module_names` and the local modules, and a specimen with an external import is reported. **Issue:** #94. (done 2026-11-20 19:24: added `tests/test_capture_stdlib_imports.py`, which reads `tools/capture.py` with `ast` without importing it and names any non-standard dependency (D-02).)
+- [x] **2.14** Report the offending line when a sidecar fails to parse, covered in `tests/test_schema_parse_line.py`. S. Deps: 0.4. Done when: `load_manifest` reports `line N, column M` after the `sidecar is not valid TOML` prefix, and the new tests cover several parse failures. **Issue:** #96. (done 2026-11-20 19:24: added `describe_toml_error` in `validate.py`, which reads the position from the `tomllib` message so it reads the same on every supported Python, and `tests/test_schema_parse_line.py`.)
 
 ### Phase 3: Consumer contract
 
@@ -161,6 +162,7 @@ python3 scripts/roadmap_progress.py --check ROADMAP.md
 
 | When | What | Tasks |
 |---|---|---|
+| 2026-11-20 19:24 | Task 2.14 (closing #96): added `describe_toml_error` in `validate.py`, which reads the position from the `tomllib` message so it reads the same on every supported Python, and `tests/test_schema_parse_line.py`. | 2.14 |
 | 2026-11-20 19:24 | Task 2.13 (closing #94): added `tests/test_capture_stdlib_imports.py`, which reads `tools/capture.py` with `ast` without importing it and names any non-standard dependency (D-02). | 2.13 |
 | 2026-11-20 19:24 | Task 2.12 (closing #93): added `tests/test_capture_seed_no_dir.py`, which feeds `capture()` a seed-shaped body built at run time and asserts the refusal and an untouched root directory. | 2.12 |
 | 2026-11-20 19:24 | Task 2.11 (closing #92): added `tests/test_capture_cap_boundary.py`, which serves both sizes from a loopback server and checks `capture()` writes nothing when the cap is exceeded. | 2.11 |

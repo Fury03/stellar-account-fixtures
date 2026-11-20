@@ -187,6 +187,26 @@ def shapes_of(account: dict) -> set[str]:
     return found
 
 
+TOML_POSITION = re.compile(r"\s*\(at line (\d+), column (\d+)\)$")
+TOML_END = " (at end of document)"
+
+
+def describe_toml_error(exc: tomllib.TOMLDecodeError, text: str) -> str:
+    """Name the offending line of a sidecar that tomllib refused.
+
+    tomllib puts the position inside the message, and only newer Pythons also expose it
+    as attributes, so the message is the one source that reads the same on 3.11 and later.
+    """
+    message = str(exc)
+    found = TOML_POSITION.search(message)
+    if found:
+        return f"line {found.group(1)}, column {found.group(2)}: {message[: found.start()]}"
+    if message.endswith(TOML_END):
+        last = max(len(text.splitlines()), 1)
+        return f"line {last} (end of document): {message[: -len(TOML_END)]}"
+    return message
+
+
 def load_manifest(corpus: Corpus, path: Path, where: str) -> dict | None:
     # read_bytes, not read_text: universal newlines would translate CRLF into
     # LF before this function could see it, and the check below would be dead.
@@ -206,7 +226,7 @@ def load_manifest(corpus: Corpus, path: Path, where: str) -> dict | None:
     try:
         data = tomllib.loads(text)
     except tomllib.TOMLDecodeError as exc:
-        corpus.error(where, f"sidecar is not valid TOML: {exc}")
+        corpus.error(where, f"sidecar is not valid TOML: {describe_toml_error(exc, text)}")
         return None
     unknown = sorted(set(data) - BASE_KEYS)
     if unknown:
