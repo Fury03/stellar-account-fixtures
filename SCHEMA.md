@@ -51,10 +51,10 @@ schema does not define is a key no consumer will read.
 | `schema_version` | required | required | Integer. This corpus is `1`; see section 7. |
 | `id` | required | required | Kebab-case, equal to the directory name. |
 | `kind` | required | required | `captured` or `synthetic`. |
-| `scenario` | required | required | One sentence on what the shape is for, in plain words. |
+| `scenario` | required | required | One printable, single-line sentence on what the shape is for, in plain words, at most 200 characters; no control characters or newlines. |
 | `account_id` | required | required | `G...` ed25519 account id, checksum included. |
 | `network` | required | required | `public` or `testnet`. |
-| `shape` | required | required | Sorted list of the labels in section 5. |
+| `shape` | required | required | Sorted list of the labels in section 5, each label at most once. |
 | `source_url` | required | forbidden | The exact URL that was read. |
 | `captured_at` | required | forbidden | `YYYY-MM-DDTHH:MM:SSZ`, UTC, not in the future. |
 | `ledger` | required | forbidden | `last_modified_ledger` of the resource, positive. |
@@ -66,6 +66,48 @@ synthetic fixture may not carry provenance keys, because it was never read from
 anywhere, and its `scenario` must start with `synthetic:`. A synthetic fixture's
 `account_id` still has to be a valid `G...` strkey, so a consumer's tests can treat both
 kinds the same way.
+
+### Worked examples
+
+Captured fixture example:
+
+```toml
+# Worked example of a captured fixture sidecar (SCHEMA.md Section 3)
+schema_version = 1
+id = "default-plain"
+kind = "captured"
+scenario = "one signer which is the master key at weight 1, all thresholds zero and no optional fields, the account a rule has to leave alone"
+account_id = "GA7DTK7GPOEQGXHI7MLA2OAIEL4365VG6PXUAVREMDVLC4MJIJ62KR75"
+network = "public"
+shape = [
+  "master_is_signer",
+  "no_data",
+  "no_home_domain",
+  "no_inflation",
+  "not_sponsored",
+  "not_sponsoring",
+  "single_signer",
+  "thresholds_zero",
+]
+source_url = "https://horizon.stellar.org/accounts/GA7DTK7GPOEQGXHI7MLA2OAIEL4365VG6PXUAVREMDVLC4MJIJ62KR75"
+captured_at = "2026-11-02T11:48:46Z"
+ledger = 65266813
+horizon_version = "30.0.0-b3ff4119cc99ebcc8048334f5ec64e78c16d1666"
+sha256 = "d14f1f7bbcf10f9e1d7e162b59db1481ecd1ea542a7f21766a53fafdebdb4cdb"
+```
+
+Synthetic fixture example:
+
+```toml
+# Worked example of a synthetic fixture sidecar (SCHEMA.md Section 3)
+schema_version = 1
+id = "synthetic-zero-threshold"
+kind = "synthetic"
+scenario = "synthetic: fabricated zero-threshold shape to exercise offline validator logic without live network capture"
+account_id = "GA7DTK7GPOEQGXHI7MLA2OAIEL4365VG6PXUAVREMDVLC4MJIJ62KR75"
+network = "testnet"
+shape = ["single_signer", "thresholds_zero"]
+```
 
 ## 4. What `account_id` has to satisfy
 
@@ -124,7 +166,9 @@ Two reading notes:
   reads as absent or zero rather than raising. Types the schema does not police are a
   validator concern, not a crash.
 
-`scenario` is prose and is not checked beyond the `synthetic:` prefix. Keep the numbers in
+`scenario` is one printable, single-line sentence of at most 200 characters. `validate.py`
+refuses control characters, newlines, non-string values and longer text, and
+`tools/capture.py` refuses the same values before it makes a request. Keep the numbers in
 it out of the way: it describes why a fixture exists, and `shape` is the machine-readable
 part.
 

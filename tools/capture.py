@@ -27,7 +27,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
-from validate import is_valid_account_id, shapes_of  # noqa: E402
+from validate import is_valid_account_id, scenario_error, shapes_of  # noqa: E402
 
 ENDPOINTS = {
     "public": "https://horizon.stellar.org",
@@ -132,6 +132,9 @@ def sidecar(
     core: str,
     shape: list[str],
 ) -> str:
+    problem = scenario_error(scenario)
+    if problem:
+        raise Refused(problem)
     shapes = ", ".join(f'"{toml_escape(token)}"' for token in sorted(shape))
     return (
         "# Written by tools/capture.py. Edit the capture, not this file.\n"
@@ -155,6 +158,9 @@ def capture(
 ) -> Path:
     if not ID_SHAPE.match(fixture_id):
         raise Refused(f"fixture id {fixture_id!r} is not kebab-case")
+    problem = scenario_error(scenario)
+    if problem:
+        raise Refused(problem)
     if not ACCOUNT_SHAPE.match(account_id):
         raise Refused(
             f"account {account_id!r} is not a G... ed25519 account id; "

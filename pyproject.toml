@@ -15,6 +15,10 @@ files = [
     "tools/capture.py",
     "test_validate.py",
     "tests/test_roadmap_gate.py",
+    "tests/test_schema_scenario_bounds.py",
+    "tests/test_schema_shape_duplicates.py",
+    "tests/test_schema_source_host.py",
+    "tests/test_schema_version_gate.py",
     "tests/test_validate_schema_root_contract.py",
     "tests/test_validate_schema_shape_table.py",
 ]

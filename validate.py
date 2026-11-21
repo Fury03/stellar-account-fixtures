@@ -26,6 +26,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 SCHEMA_VERSION = 1
+SCENARIO_MAX = 200
 BASE_KEYS = {
     "schema_version",
     "id",
@@ -135,6 +136,17 @@ def as_int(value: object) -> int:
     if isinstance(value, bool):
         return 0
     return value if isinstance(value, int) else 0
+
+
+def scenario_error(scenario: object) -> str | None:
+    """Why a scenario cannot be written as one printable TOML line, if it cannot."""
+    if not isinstance(scenario, str):
+        return "scenario must be a string"
+    if len(scenario) > SCENARIO_MAX:
+        return f"scenario must be at most {SCENARIO_MAX} characters"
+    if not scenario.isprintable():
+        return "scenario must be a single printable line with no control characters"
+    return None
 
 
 def shapes_of(account: dict) -> set[str]:
@@ -267,6 +279,10 @@ def check_common(corpus: Corpus, where: str, data: dict, raw: bytes) -> None:
         corpus.error(where, f"id {fixture_id!r} is not kebab-case")
     if fixture_id != Path(where.split(":")[0]).name:
         corpus.error(where, f"id {fixture_id!r} does not match its directory name")
+    scenario = data.get("scenario")
+    problem = scenario_error(scenario)
+    if problem:
+        corpus.error(where, problem)
     kind = data.get("kind")
     if kind not in KINDS:
         corpus.error(where, f"kind {kind!r} is not one of {sorted(KINDS)}")
@@ -276,8 +292,7 @@ def check_common(corpus: Corpus, where: str, data: dict, raw: bytes) -> None:
             corpus.error(
                 where, f"synthetic fixture carries provenance it cannot have: {', '.join(pretend)}"
             )
-        scenario = str(data.get("scenario", ""))
-        if not scenario.lower().startswith("synthetic:"):
+        if not str(scenario or "").lower().startswith("synthetic:"):
             corpus.error(where, "synthetic fixture must say so at the start of scenario")
     network = data.get("network")
     if network not in NETWORKS:
@@ -287,6 +302,9 @@ def check_common(corpus: Corpus, where: str, data: dict, raw: bytes) -> None:
     shape = data.get("shape")
     if not isinstance(shape, list) or not all(isinstance(s, str) for s in shape):
         corpus.error(where, "shape must be a list of strings")
+    elif len(shape) != len(set(shape)):
+        for label in sorted({s for s in shape if shape.count(s) > 1}):
+            corpus.error(where, f"shape lists duplicate label {label!r}")
 
 
 def check_captured(corpus: Corpus, where: str, data: dict, body: Path, account: dict) -> None:
